@@ -8,8 +8,9 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata);
 //Function to track mouse movements. 
 static void clickCallback(int event, int x, int y, int flags, void* userdata)
 {
-    if(event == cv::EVENT_LBUTTONDOWN)
+    if(event == (cv::EVENT_LBUTTONDOWN ))
     {
+        
         std::cout << "LEFT CLICK (" << x << ", " << y << ")" << std::endl;
     }
     else if(event == cv::EVENT_RBUTTONDOWN)
@@ -24,6 +25,10 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
     {
         std::cout << "MOUSE OVER (" << x << ", " << y << ")" << std::endl;
     }
+    else if (event == cv::EVENT_LBUTTONUP)
+    {
+        std::cout<<"LEFT CLICK RELEASE (" << x << " ,"<< y << ")" <<std::endl;
+    }
 }
 
 
@@ -32,9 +37,11 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
 #define NUM_COMNMAND_LINE_ARGUMENTS 1
 #define DISPLAY_WINDOW_NAME "Assignment 1"
 
-
 int main(int argc, char **argv)
 {
+    //intializing eye dropper to 255, 255, 255
+
+    int EYEDROPER[3] ={255, 255, 255}; 
     // validate and parse the command line arguments
     if(argc != NUM_COMNMAND_LINE_ARGUMENTS + 1)
     {
@@ -54,7 +61,14 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::cout<<"this is working space"<<std::endl;
+            cv::imshow(DISPLAY_WINDOW_NAME, imageIn);
+           
+
+            //this will track movement of mouse when the image is open
+            cv::setMouseCallback(DISPLAY_WINDOW_NAME, clickCallback, &imageIn);
+
+            cv::waitKey();
+
         }
     }
 }
