@@ -16,6 +16,8 @@ int tools = 0;
 std::string color[4] = {"EYEDROPER","CROP","PENCIL","PAINT BUCKET"};
 
 int EYEDROPER[3] ={255, 255, 255}; //intializing eye dropper to 255, 255, 255
+int init_cropCord[2];
+int final_cropCord[2];
 
 cv::Mat imageIn;
 cv::Mat initilImage;
@@ -26,7 +28,14 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata);
 //Function to track mouse movements. 
 static void clickCallback(int event, int x, int y, int flags, void* userdata)
 {
-    if(event == (cv::EVENT_LBUTTONDOWN ))
+    if (event ==cv::EVENT_LBUTTONDBLCLK)
+    {
+        std::cout<<"LEFT DOUBLE CLICK "<<x <<" ," << y <<std::endl;
+        cv::imshow(DISPLAY_WINDOW_NAME, initilImage);
+        cv::waitKey();
+
+    }
+    else if(event == (cv::EVENT_LBUTTONDOWN ))
     {
         if (tools == 1)
         {
@@ -39,14 +48,16 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
             std::cout<<"EYEDROPER Value = [ "<< EYEDROPER[0]<<", "<<EYEDROPER[1]<<", "<<EYEDROPER[2]<<"]"<<std::endl;
 
         }
+        if (tools == 2 )
+        {
+            init_cropCord[0] = x;
+            init_cropCord[1]  = y; 
+        }
+
         
         //std::cout << "LEFT CLICK (" << x << ", " << y << ")" << std::endl;
     }
-    else if (event ==cv::EVENT_LBUTTONDBLCLK)
-    {
-        std::cout<<"LEFT DOUBLE CLICK "<<x <<" ," << y <<std::endl;
-        imageIn = initilImage.clone();
-    }
+    
     else if(event == cv::EVENT_RBUTTONDOWN)
     {
         //In each right click it will select tools that will be used
@@ -72,6 +83,25 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
     }
     else if (event == cv::EVENT_LBUTTONUP)
     {
+        if (tools == 2)
+        {
+            final_cropCord[0] = x;
+            final_cropCord[1] = y;
+
+            cv::Point p1(init_cropCord[0],init_cropCord[1]);
+            cv::Point p2(final_cropCord[0],final_cropCord[1]);
+            cv::Rect region(p1, p2); 
+            cv::Mat imageROI = imageIn(region);
+
+            //if reactangle is not formed then imshow throw an error
+            //To avoid that using if statment . 
+            if (!region.empty())
+            {
+                cv::imshow(DISPLAY_WINDOW_NAME, imageROI);
+                cv::waitKey();
+            }   
+                
+        }
        // std::cout<<"LEFT CLICK RELEASE (" << x << " ,"<< y << ")" <<std::endl;
     }
 }
