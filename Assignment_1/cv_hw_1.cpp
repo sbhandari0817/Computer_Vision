@@ -30,7 +30,14 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
     {
         if (tools == 1)
         {
-            
+            cv::Vec3b BGR_Value = imageIn.at<cv::Vec3b>(y,x);
+            for (int i = 0; i < 3; i++)
+            {
+                 EYEDROPER[i] = BGR_Value.val[i];
+                 
+            }
+            std::cout<<"EYEDROPER Value = [ "<< EYEDROPER[0]<<", "<<EYEDROPER[1]<<", "<<EYEDROPER[2]<<"]"<<std::endl;
+
         }
         
         //std::cout << "LEFT CLICK (" << x << ", " << y << ")" << std::endl;
