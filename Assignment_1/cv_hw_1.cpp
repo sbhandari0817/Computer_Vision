@@ -1,3 +1,9 @@
+/*
+    Santosh Bhandari
+    1001387116
+    Assignment 1
+*/
+
 #include <iostream>
 #include <string>
 #include "opencv2/opencv.hpp"
@@ -8,59 +14,63 @@
 #define DISPLAY_WINDOW_NAME "Assignment 1"
 
 //Global variables 
-int No_LB_Clicked = 0;        
-int No_RB_Clicked = 0;
-int Coordnate_LB_Down[2];
-int Coordinate_LB_Up[2];
-int tools = 0;
+int init_cropCord[2];//Inital coordiante to crop
+int final_cropCord[2]; //Final coordinate to crop 
+
+int tools = 0;          //Navigate between toos starts from 1-6
+
+//Diffferent toools that will be used. 
 std::string color[5] = {"EYEDROPER","CROP","PENCIL","PAINT BUCKET","RESET"};
 
 cv::Vec3b EYEDROPER = cv::Vec3b (255, 255, 255); //intializing eye dropper to 255, 255, 255
-int init_cropCord[2];
-int final_cropCord[2];
+
+//Helps to use pencil when mouse is over and left bottton is pressesd.
+//This boolean value function as a switch to use pencil. 
 bool Pencil = false;
+
+//Store the color value of pixel when implementing
+//paint box. 
 cv::Vec3b paintColor;
 
-cv::Mat imageIn;
-cv::Mat initilImage;
+cv::Mat imageIn;     //Image that we read and work on 
+cv::Mat initilImage; //Copy of original image to do reset. 
 
 //Functions Prototypes. 
-static void clickCallback(int event, int x, int y, int flags, void* userdata);
-void changeColor(int x, int y);
-void paintBox(int x, int y);
+static void clickCallback(int event, int x, int y, int flags, void* userdata); //Mouse movenment tracker
+void changeColor(int x, int y);        //Pencil color changer
+void paintBox(int x, int y);           // for Paintbox tools 
 
 //Function to change pixel color when pencil is selected
 void changeColor(int x, int y)
 {
-
-    //Getting BGR value of that pixel
-   // cv::Vec3b BGR_Value = EYEDROPER;
-    // = (cv::Vec3b EYEDROPER[0],cv::Vec3b EYEDROPER[1],cv::Vec3b EYEDROPER[2]);
-
-    //Changing BGR value to the eydropper value
-     for (int i = 0; i < 3; i++)
-        { 
-            //imageIn.at<cv::Vec3b>(y,x)[i] = EYEDROPER[i];
-            //BGR_Value[i] =cv::Vec3b EYEDROPER[i]; 
-               
-        }
+    //Initalizing the pencil color to pixel 
     imageIn.at<cv::Vec3b>(y,x) = EYEDROPER;
+
     //Displaying change in the image
     cv::imshow(DISPLAY_WINDOW_NAME, imageIn);
     cv::waitKey();
 }
 void paintBox(int x, int y)
 {
+    //Checking  if the pixel is same as that we want to change
     if (paintColor == (imageIn.at<cv::Vec3b>(y,x)))
     {
-        imageIn.at<cv::Vec3b>(y,x) = EYEDROPER;
-        paintBox (x + 1, y);
-        paintBox (x -1, y);
-        paintBox (x, y+1);
-        paintBox (x, y-1);
-    }
-   
+        imageIn.at<cv::Vec3b>(y,x) = EYEDROPER;  //assigning value of eyedroper
 
+        //Checking if there is any pixel on left and on right of that pixel
+        if (x < imageIn.cols && x > 0)
+        {
+            paintBox (x + 1, y);
+            paintBox (x -1, y);
+        }
+        //Checking if there is any pixel on up and on down of that pixel
+        if (y < imageIn.rows && y > 0)
+        {
+            paintBox (x, y+1);
+            paintBox (x, y-1);
+        }
+    }
+    return;
 }
 
 //Function to track mouse movements. 
@@ -70,7 +80,6 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
     {
         if (tools == 5)
         {
-            std::cout<<"LEFT DOUBLE CLICK "<<x <<" ," << y <<std::endl;
             imageIn = initilImage.clone();
             cv::imshow(DISPLAY_WINDOW_NAME, initilImage);
             cv::waitKey();
@@ -104,13 +113,17 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
         if (tools == 4)
         {
             paintColor = imageIn.at<cv::Vec3b>(y,x);
-            paintBox(x, y);
-            cv::imshow(DISPLAY_WINDOW_NAME, imageIn);
-            cv::waitKey();
+
+            //If selected pixel has same value as eyebropper
+            //then changing color is not necessary. 
+            if (EYEDROPER != paintColor)
+            {
+                paintBox(x, y);
+                cv::imshow(DISPLAY_WINDOW_NAME, imageIn);
+                cv::waitKey();
+            }
         }
 
-        
-        //std::cout << "LEFT CLICK (" << x << ", " << y << ")" << std::endl;
     }
     
     else if(event == cv::EVENT_RBUTTONDOWN)
@@ -119,19 +132,20 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
         if (tools < 5)
         {
             tools++;
+            //In each right click it will select tools that will be used
+            //in open CV
+            std::cout << color[tools-1] <<" Selected" << std::endl;
         }
         else
         {
             tools = 0;
+            std::cout<< "No tools Selected " <<std::endl;
         }
-        //In each right click it will select tools that will be used
-        //in open CV
-        std::cout << color[tools-1] <<" Selected" << std::endl;
+        
     }
 
     else if(event == cv::EVENT_MOUSEMOVE)
     {
-       // std::cout << "MOUSE OVER (" << x << ", " << y << ")" << std::endl;
         if (Pencil)
         {
             changeColor(x, y);
@@ -164,7 +178,7 @@ static void clickCallback(int event, int x, int y, int flags, void* userdata)
         {
             Pencil = false;
         }
-       // std::cout<<"LEFT CLICK RELEASE (" << x << " ,"<< y << ")" <<std::endl;
+       
     }
 }
 
