@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.15)
 find_package(OpenCV REQUIRED)
 
 # create create individual projects
-add_executable(cv_annotation cv_annotation.cpp)
-target_link_libraries(cv_annotation ${OpenCV_LIBS})
+add_executable(cv_assignment2 cv_assignment2.cpp)
+target_link_libraries(cv_assignment2 ${OpenCV_LIBS})
 
 
