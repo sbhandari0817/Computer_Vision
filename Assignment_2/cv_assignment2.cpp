@@ -1,3 +1,9 @@
+/*
+    Santosh Bhandari
+    1001387116
+    Assignment 2 
+*/
+
 #include <iostream>
 #include <string>
 #include "opencv2/opencv.hpp"
@@ -8,6 +14,12 @@
 
 int main(int argc, char **argv)
 {
+    int no_penny = 0;
+    int no_dime = 0;
+    int no_nickle = 0;
+    int no_quarter = 0;
+
+    std::vector<double>area;
     cv::Mat imageIn;
 
     // validate and parse the command line arguments
@@ -27,11 +39,6 @@ int main(int argc, char **argv)
             return 0;
         }
     }
-
-    // get the image size
-    std::cout << "image width: " << imageIn.size().width << std::endl;
-    std::cout << "image height: " << imageIn.size().height << std::endl;
-    std::cout << "image channels: " << imageIn.channels() << std::endl;
 
     //Resizing image
     cv::Mat imageResized;
@@ -70,27 +77,6 @@ int main(int argc, char **argv)
         cv::drawContours(imageContours, contours, i, color);
     }
 
-    // compute minimum area bounding rectangles
-    std::vector<cv::RotatedRect> minAreaRectangles(contours.size());
-    for(int i = 0; i < contours.size(); i++)
-    {
-        // compute a minimum area bounding rectangle for the contour
-        minAreaRectangles[i] = cv::minAreaRect(contours[i]);
-    }
-
-    // draw the rectangles
-    cv::Mat imageRectangles = cv::Mat::zeros(imageEdges.size(), CV_8UC3);
-    for(int i = 0; i < contours.size(); i++)
-    {
-        cv::Scalar color = cv::Scalar(rand.uniform(0, 256), rand.uniform(0,256), rand.uniform(0,256));
-        cv::Point2f rectanglePoints[4];
-        minAreaRectangles[i].points(rectanglePoints);
-        for(int j = 0; j < 4; j++)
-        {
-            cv::line(imageRectangles, rectanglePoints[j], rectanglePoints[(j+1) % 4], color);
-        }
-    }
-
     // fit ellipses to contours containing sufficient inliers
     std::vector<cv::RotatedRect> fittedEllipses(contours.size());
     for(int i = 0; i < contours.size(); i++)
@@ -99,11 +85,43 @@ int main(int argc, char **argv)
         if(contours.at(i).size() > 5)
         {
             fittedEllipses[i] = cv::fitEllipse(contours[i]);
+            //Calculating area of the ellipse
+            area.push_back(cv::contourArea(contours[i]));
         }
     }
 
-    // draw the ellipses
-    cv::Mat imageEllipse = cv::Mat::zeros(imageEdges.size(), CV_8UC3);
+    //Classifying coins according to size. 
+    for (auto &value: area)
+    {
+        if (value > 19690)
+        {
+            no_quarter++;
+        }
+        else if(value > 15200)
+        {
+            no_nickle++;
+        }
+        else if (value > 12000)
+        {
+            no_penny++;
+        }
+        else if (value > 10500)
+        {
+            no_dime++;
+        }
+    }
+
+    //Calculating total monetary value and printing
+    double total;
+    total = (0.01 *no_penny )+ (0.05*no_nickle)+(0.10*no_dime)+(0.25*no_quarter);
+    //printing values
+    std::cout<<"Penny - "<<no_penny<<std::endl;
+    std::cout<<"Nickel - "<<no_nickle<<std::endl;
+    std::cout<<"Dime - "<<no_dime<<std::endl;
+    std::cout<<"Quarter - "<<no_quarter<<std::endl;
+    std::cout<<"Total - $"<<total<<std::endl;
+
+    // draw the ellipses around coin
     const int minEllipseInliers = 50;
     for(int i = 0; i < contours.size(); i++)
     {
@@ -111,20 +129,11 @@ int main(int argc, char **argv)
         if(contours.at(i).size() > minEllipseInliers)
         {
             cv::Scalar color = cv::Scalar(rand.uniform(0, 256), rand.uniform(0,256), rand.uniform(0,256));
-            cv::ellipse(imageEllipse, fittedEllipses[i], color, 2);
             cv::ellipse(imageIn, fittedEllipses[i], color, 2);
         }
     }
 
     // display the images
     cv::imshow("imageIn", imageIn);
-    // cv::imshow("imageGray", imageGray);
-    // cv::imshow("imageEdges", imageEdges);
-    // cv::imshow("edges dilated", edgesDilated);
-    // cv::imshow("edges eroded", edgesEroded);
-    // cv::imshow("imageContours", imageContours);
-    // cv::imshow("imageRectangles", imageRectangles);
-    // cv::imshow("imageEllipse", imageEllipse);
-        
     cv::waitKey();
 }
