@@ -1,0 +1,3 @@
+/home/santosh/Santosh_Cse4310/Computer_Vision/Assignment_2/build/CMakeFiles/rebuild_cache.dir
+/home/santosh/Santosh_Cse4310/Computer_Vision/Assignment_2/build/CMakeFiles/edit_cache.dir
+/home/santosh/Santosh_Cse4310/Computer_Vision/Assignment_2/build/CMakeFiles/cv_assignment2.dir
