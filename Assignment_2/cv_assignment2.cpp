@@ -1,5 +1,3 @@
-
-// include necessary dependencies
 #include <iostream>
 #include <string>
 #include "opencv2/opencv.hpp"
@@ -35,13 +33,11 @@ int main(int argc, char **argv)
     std::cout << "image height: " << imageIn.size().height << std::endl;
     std::cout << "image channels: " << imageIn.channels() << std::endl;
 
+    //Resizing image
+    cv::Mat imageResized;
+    cv::resize(imageIn, imageResized, cv::Size(imageIn.cols/4,imageIn.rows/5));
+    imageIn = imageResized.clone();
 
-    //Resize the image 
-    cv::Mat imageResiged;
-    cv::resize(imageIn, imageResiged, cv::Size(imageIn.cols /2, imageIn.rows /2));
-
-    //changing original image to resiged. 
-    imageIn = imageResiged.clone();
     // convert the image to grayscale
     cv::Mat imageGray;
     cv::cvtColor(imageIn, imageGray, cv::COLOR_BGR2GRAY);
@@ -52,10 +48,18 @@ int main(int argc, char **argv)
     const double cannyThreshold2 = 200;
     const int cannyAperture = 3;
     cv::Canny(imageGray, imageEdges, cannyThreshold1, cannyThreshold2, cannyAperture);
-
+    
+    // erode and dilate the edges to remove noise
+    int morphologySize = 1;
+    cv::Mat edgesDilated;
+    cv::dilate(imageEdges, edgesDilated, cv::Mat(), cv::Point(-1, -1), morphologySize);
+    cv::Mat edgesEroded;
+    cv::erode(edgesDilated, edgesEroded, cv::Mat(), cv::Point(-1, -1), morphologySize);
+    
     // locate the image contours (after applying a threshold or canny)
     std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(imageEdges, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    //std::vector<int> hierarchy;
+    cv::findContours(edgesEroded, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
     // draw the contours
     cv::Mat imageContours = cv::Mat::zeros(imageEdges.size(), CV_8UC3);
@@ -100,7 +104,7 @@ int main(int argc, char **argv)
 
     // draw the ellipses
     cv::Mat imageEllipse = cv::Mat::zeros(imageEdges.size(), CV_8UC3);
-    const int minEllipseInliers = 500;
+    const int minEllipseInliers = 50;
     for(int i = 0; i < contours.size(); i++)
     {
         // draw any ellipse with sufficient inliers
@@ -108,7 +112,7 @@ int main(int argc, char **argv)
         {
             cv::Scalar color = cv::Scalar(rand.uniform(0, 256), rand.uniform(0,256), rand.uniform(0,256));
             cv::ellipse(imageEllipse, fittedEllipses[i], color, 2);
-            cv::ellipse(imageIn, fittedEllipses[i],color,2);
+            cv::ellipse(imageIn, fittedEllipses[i], color, 2);
         }
     }
 
@@ -116,8 +120,11 @@ int main(int argc, char **argv)
     cv::imshow("imageIn", imageIn);
     // cv::imshow("imageGray", imageGray);
     // cv::imshow("imageEdges", imageEdges);
+    // cv::imshow("edges dilated", edgesDilated);
+    // cv::imshow("edges eroded", edgesEroded);
     // cv::imshow("imageContours", imageContours);
     // cv::imshow("imageRectangles", imageRectangles);
     // cv::imshow("imageEllipse", imageEllipse);
+        
     cv::waitKey();
 }
