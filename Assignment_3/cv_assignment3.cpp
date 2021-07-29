@@ -155,6 +155,7 @@ int main(int argc, char **argv)
         else
         {
             std::printf("Unable to acquire image frame! \n");
+            //Terminating program if no more frame is there
             doCapture = false;
         }
 
